@@ -132,9 +132,12 @@ vsync, touch controls on).
 
 ## Open points
 
-- **Not run on a device yet.** First things to check: the Xenos Vulkan backend on MoltenVK (the PC
-  build is tested on Direct3D 12; GTA V on iOS uses its own renderer instead of this backend), the
-  `fbo` render-target path, memory (jetsam limits on 4 GB phones) and the frame time in a match.
+- **Not run on a device yet.** The SDK's Vulkan backend has an Apple / MoltenVK mode (no geometry
+  shaders or wireframe fill required: primitives are converted on the CPU), which iOS inherits,
+  but this game has not been run through it on a phone. First things to check: rendering
+  (`fbo` render-target path), memory (jetsam limits on 4 GB phones) and the frame time in a match.
+- CI (`.github/workflows/ios-check.yml`) builds the patched SDK for iOS with Xcode, compiles the
+  app's iOS sources and runs the touch pad test. It cannot build the game: that needs your copy.
 - Online (NOBK.Online) needs the network code (`online_hooks.h`) checked on iOS; the friends
   panel and achievements pop-ups draw through the same ImGui as the touch pad.
 - The keyboard is only reachable with a hardware keyboard: online sign-in takes its account from

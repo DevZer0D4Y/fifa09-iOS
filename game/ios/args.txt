@@ -6,6 +6,10 @@
 --gpu_plugin=xenos
 --graphics_api=vulkan
 --render_target_path_vulkan=fbo
+# MoltenVK has no geometry shaders or wireframe fill: use the SDK's fallback paths (its Apple
+# default, stated here so a Documents/args.txt cannot lose it by accident).
+--vulkan_require_geometry_shader=false
+--vulkan_require_fill_mode_non_solid=false
 # 60 fps, locked: the guest presents once per vblank and the vblank comes from the screen
 # (src/ios/display_link.mm, CADisplayLink at 60 Hz), so every game frame lands on a refresh.
 --vsync=true

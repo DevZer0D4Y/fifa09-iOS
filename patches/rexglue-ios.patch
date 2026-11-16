@@ -2734,6 +2734,18 @@ index 29ad9ff..fbed6c4 100644
    return X_STATUS_SUCCESS;
  }
  
+diff --git a/src/kernel/xam/xam_net.cpp b/src/kernel/xam/xam_net.cpp
+index 5419489..c00ee2b 100644
+--- a/src/kernel/xam/xam_net.cpp
++++ b/src/kernel/xam/xam_net.cpp
+@@ -106,6 +106,7 @@ REXCVAR_DEFINE_BOOL(net_packet_log, false, "Net",
+ #include <netinet/in.h>
+ #include <netinet/ip.h>
+ #include <sys/socket.h>
++#include <netdb.h>   // gethostbyname
+ #endif
+ 
+ namespace rex {
 diff --git a/src/system/gpu_plugin_loader.cpp b/src/system/gpu_plugin_loader.cpp
 index 754fa13..b1006d6 100644
 --- a/src/system/gpu_plugin_loader.cpp

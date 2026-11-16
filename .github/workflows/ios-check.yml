@@ -79,7 +79,14 @@ jobs:
       - name: SDK for iOS (build)
         run: |
           cd "$RUNNER_TEMP/sdk"
-          ninja -C out/build/ios-arm64
+          # Keep going past errors and list them all at the end (one round instead of many).
+          if ! ninja -C out/build/ios-arm64 -k 0 > "$RUNNER_TEMP/build.log" 2>&1; then
+            echo "::group::errors"
+            grep -E -B2 -A6 "error:|FAILED:|Undefined symbols|ld: " "$RUNNER_TEMP/build.log" | grep -v "^/usr/bin/clang" | tail -400
+            echo "::endgroup::"
+            exit 1
+          fi
+          tail -5 "$RUNNER_TEMP/build.log"
           cmake --install out/build/ios-arm64
           ls -la out/install/ios-arm64/lib | head -40
           file out/install/ios-arm64/lib/librexruntime.dylib
