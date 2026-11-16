@@ -1,12 +1,15 @@
 #pragma once
 
 #include <chrono>
+#include <cstdlib>
+#include <filesystem>
 #include <memory>
 #include <string>
 
 #include <imgui.h>
 
 #include <rex/cvar.h>
+#include <rex/input/input_system.h>
 #include <rex/perf/counter.h>
 #include <rex/rex_app.h>
 #include <rex/runtime.h>
@@ -19,6 +22,18 @@
 #include "achievement_export.h"
 #include "crash_handler.h"
 #include "online_hooks.h"
+
+#if defined(__APPLE__)
+#include <TargetConditionals.h>
+#endif
+#if defined(__APPLE__) && TARGET_OS_IPHONE
+#define FIFA09_IOS 1
+#else
+#define FIFA09_IOS 0
+#endif
+#if defined(FIFA09_TOUCH)
+#include "ios/touch_pad.h"
+#endif
 
 REXCVAR_DEFINE_STRING(graphics_api, "any", "GPU",
                       "Graphics backend for the GPU plugin: any, d3d12, vulkan")
@@ -93,9 +108,45 @@ class Fifa09App : public rex::ReXApp {
   void OnPreSetup(rex::RuntimeConfig& config) override {
     fifa09::CrashHandler::Install();
     std::string api = REXCVAR_GET(graphics_api);
+#if FIFA09_IOS
+    api = "vulkan";  // MoltenVK; there is no Direct3D on iOS
+    if (config.gpu_plugin.empty()) config.gpu_plugin = "xenos";
+#endif
     if (api != "any" && !config.gpu_plugin.empty())
       config.graphics = rex::system::LoadGpuPlugin(config.gpu_plugin, api);
+#if defined(FIFA09_TOUCH)
+    // On-screen football gamepad next to the SDK's pad and keyboard drivers (user 0).
+    rexios::touch::Labels labels;
+    labels.a = "Pass";
+    labels.b = "Lob";
+    labels.x = "Shoot";
+    labels.y = "Through";
+    labels.lt = "LT";
+    labels.rt = "Sprint";
+    labels.lb = "LB";
+    labels.rb = "Finesse";
+    labels.right_stick = "Skills";
+    rexios::touch::SetLabels(labels);
+    config.input_factory = [](bool tool_mode) -> std::unique_ptr<rex::system::IInputSystem> {
+      auto input = rex::input::CreateDefaultInputSystem(tool_mode);
+      if (!tool_mode) input->AddDriver(rexios::touch::CreateDriver());
+      return input;
+    };
+#endif
   }
+
+#if FIFA09_IOS
+  // iPhone / iPad: the app bundle is read-only. The game, saves and caches live in the app's
+  // Documents folder (visible in Finder / the Files app), as the Game folder next to the exe on PC.
+  void OnConfigurePaths(rex::PathConfig& paths) override {
+    const char* home = std::getenv("HOME");
+    if (!home) return;
+    const std::filesystem::path docs = std::filesystem::path(home) / "Documents";
+    if (paths.game_data_root.empty()) paths.game_data_root = docs / "Game";
+    if (paths.user_data_root.empty()) paths.user_data_root = docs / "userdata";
+    if (paths.cache_root.empty()) paths.cache_root = docs / "cache";
+  }
+#endif
 
   void OnPostSetup() override {
     SetGuestFrameStats([]() {
@@ -113,6 +164,9 @@ class Fifa09App : public rex::ReXApp {
   void OnConfigureFonts(ImFontAtlas* atlas) override { fifa09::LoadPopupFont(atlas); }
 
   void OnCreateDialogs(rex::ui::ImGuiDrawer* drawer) override {
+#if defined(FIFA09_TOUCH)
+    touch_overlay_ = rexios::touch::CreateOverlay(drawer);
+#endif
     rex::ui::RegisterBind("bind_display_info", "F2", "Toggle display info", [this, drawer] {
       if (display_info_) {
         display_info_.reset();
@@ -154,10 +208,12 @@ class Fifa09App : public rex::ReXApp {
     rex::ui::UnregisterBind("bind_achievement_test");
     display_info_.reset();
     achievement_export_.reset();
+    touch_overlay_.reset();
   }
 
  private:
   std::unique_ptr<DisplayInfoDialog> display_info_;
   size_t test_index_ = 0;
   std::unique_ptr<fifa09::AchievementExportDialog> achievement_export_;
+  std::unique_ptr<rex::ui::ImGuiDialog> touch_overlay_;
 };

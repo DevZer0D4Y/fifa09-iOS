@@ -24,6 +24,11 @@ Online play runs on the free [NOBK.Online](https://nobkonline.com) servers.
 | **Achievements** with Xbox 360-style pop-ups | **Launcher** — settings, file check, Add to Steam (Steam Deck too), self-update, one-click log upload |
 | **Friends in game** — press **F1** (or hold **Back / Share**): your NOBK.Online friends, invites, join a friend's lobby, achievements, server status and notices | **NOBK.Online ad boards** around the pitch |
 
+## iPhone and iPad (in development)
+
+An iOS build with on-screen football controls and a 60 fps lock tied to the screen's refresh is
+in the source tree, not yet tested on a device: [docs/IOS.md](docs/IOS.md).
+
 ## Online on NOBK.Online
 
 1. Create a free account at [nobkonline.com](https://nobkonline.com/register/). Your username is your in-game name.

@@ -1,0 +1,22 @@
+# FIFA 09 iOS launch arguments. This file is copied into the app; a Documents/args.txt on the
+# phone (Finder / Files app) is read after it, so its lines win. Paths are relative to Documents.
+--game_data_root=Game
+--user_data_root=userdata
+--cache_root=cache
+--gpu_plugin=xenos
+--graphics_api=vulkan
+--render_target_path_vulkan=fbo
+# 60 fps, locked: the guest presents once per vblank and the vblank comes from the screen
+# (src/ios/display_link.mm, CADisplayLink at 60 Hz), so every game frame lands on a refresh.
+--vsync=true
+--video_mode_refresh_rate=60
+--fullscreen
+# Phone GPUs: 1x internal resolution (1280x720), cheapest resolve readback, plain upscale.
+--resolution_scale=1
+--readback_resolve=fast
+--present_effect=bilinear
+--edram_ownership_no_wrap=true
+--async_shader_compilation=true
+--touch_controls=true
+--log_level=info
+--log_file=logs/fifa09.log
